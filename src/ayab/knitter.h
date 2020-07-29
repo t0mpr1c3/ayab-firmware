@@ -34,7 +34,6 @@
 #include "solenoids.h"
 
 // Machine constants
-constexpr uint8_t NUM_NEEDLES = 200U; // FIXME 114 for KH-270
 constexpr uint8_t END_OF_LINE_OFFSET_L = 12U;
 constexpr uint8_t END_OF_LINE_OFFSET_R = 12U;
 
@@ -44,6 +43,8 @@ constexpr uint8_t startOffsetLUT[NUM_DIRECTIONS][NUM_CARRIAGES] = {
     {0, 40, 40, 8},  // Left
     {0, 16, 16, 32}, // Right
 };
+
+enum MachineType { Kh910, Kh930, Kh270 };
 
 enum OpState { s_init, s_ready, s_operate, s_test };
 
@@ -67,7 +68,7 @@ public:
 
   void isr();
   void fsm();
-  auto startOperation(uint8_t MachineVal, uint8_t startNeedle, uint8_t stopNeedle,
+  auto startOperation(uint8_t machineType, uint8_t startNeedle, uint8_t stopNeedle,
                       bool continuousReportingEnabled, uint8_t *line) -> bool;
   auto startTest() -> bool;
   auto setNextLine(uint8_t lineNumber) -> bool;
@@ -76,6 +77,8 @@ public:
   auto getState() -> OpState_t;
   void send(uint8_t *payload, size_t length);
   void onPacketReceived(const uint8_t *buffer, size_t size);
+
+  uint8_t m_machineType = 0U;
 
 private:
   Solenoids m_solenoids;
@@ -89,8 +92,8 @@ private:
   // TODO(sl): Not used? Can be removed?
   uint8_t m_lastLinesCountdown = 0U;
 
-  // Job Parameters
-  uint8_t m_machineType = 0U;
+  // job parameters
+  uint8_t m_numNeedles = 0U;
   uint8_t m_startNeedle = 0U;
   uint8_t m_stopNeedle = 0U;
   bool m_continuousReportingEnabled = false;
@@ -112,7 +115,7 @@ private:
   bool m_prevState = false;
 #endif
 
-  // Resulting needle data
+  // resulting needle data
   uint8_t m_solenoidToSet = 0U;
   uint8_t m_pixelToSet = 0U;
 

@@ -131,28 +131,39 @@ void SerialEncoding::h_reqStart(const uint8_t *buffer, size_t size) {
  * \todo TP: allow shorter needle bitarray for KH-270?
  */
 void SerialEncoding::h_cnfLine(const uint8_t *buffer, size_t size) {
-  if (size < 29U) {
-    // Need 29 bytes from buffer below.
+  extern Knitter *knitter;
+  /*
+  uint8_t lenLineBuffer;
+  if (knitter->m_machineType == Kh270) {
+    // KH270 has 114 needles = 15 bytes
+    lenLineBuffer = 15U;
+  } else {
+    // Other machines have 200 needles = 25 bytes
+    lenLineBuffer = 25U;
+  }
+  */
+
+  if (size < LINEBUFFER_LEN /* lenLineBuffer */ + 5U) {
     return;
   }
 
   uint8_t lineNumber = buffer[1];
+  //uint8_t color = buffer[2];  /* unused */
+  uint8_t flags = buffer[3];
 
-  for (uint8_t i = 0U; i < LINEBUFFER_LEN; i++) {
+  for (uint8_t i = 0U; i < LINEBUFFER_LEN /* lenLineBuffer */; i++) {
     // Values have to be inverted because of needle states
-    lineBuffer[i] = ~buffer[i + 2];
+    lineBuffer[i] = ~buffer[i + 4];
   }
-  uint8_t flags = buffer[27];
 
 #ifdef AYAB_ENABLE_CRC
-  uint8_t crc8 = buffer[28];
-  // Check crc on bytes 0-27 of buffer.
-  if (crc8 != CRC8(buffer, 28)) {
+  uint8_t crc8 = buffer[LINEBUFFER_LEN /* lenLineBuffer */ + 4];
+  // Calculate checksum of buffer contents
+  if (crc8 != CRC8(buffer, LINEBUFFER_LEN /* lenLineBuffer */ + 4)) {
     return;
   }
 #endif
 
-  extern Knitter *knitter;
   if (knitter->setNextLine(lineNumber)) {
     // Line was accepted
     bool flagLastLine = bitRead(flags, 0U);

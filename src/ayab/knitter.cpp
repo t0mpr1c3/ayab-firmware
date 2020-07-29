@@ -135,10 +135,14 @@ auto Knitter::startOperation(uint8_t machineType, uint8_t startNeedle, uint8_t s
     return success;
   }
 
-  // FIXME(TP): NUM_NEEDLES depends on machineType
+  if (machineType == Kh270) {
+    m_numNeedles = 114;
+  } else {
+    m_numNeedles = 200;
+  }
 
   // TODO(sl): Check OK after removed always true comparison.
-  if (stopNeedle < NUM_NEEDLES && startNeedle < stopNeedle) {
+  if (stopNeedle < m_numNeedles && startNeedle < stopNeedle) {
     if (s_ready == m_opState) {
       // Proceed to next state
       m_opState = s_operate;

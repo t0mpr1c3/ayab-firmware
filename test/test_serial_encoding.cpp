@@ -34,7 +34,10 @@ TEST_F(SerialEncodingTest, test_startmsg) {
   uint8_t buffer[] = {reqStart_msgid, 0, 0, 10, 1, 0x74};
   s->onPacketReceived(buffer, sizeof(buffer));
   // checksum wrong
-  buffer[5] = 0;
+  buffer[5] = 0x73;
+  s->onPacketReceived(buffer, sizeof(buffer));
+  // kh270
+  buffer[1] = 2;
   s->onPacketReceived(buffer, sizeof(buffer));
   // Not enough bytes
   s->onPacketReceived(buffer, sizeof(buffer) - 1);
@@ -48,13 +51,15 @@ TEST_F(SerialEncodingTest, test_infomsg) {
 TEST_F(SerialEncodingTest, test_cnfmsg) {
   // CRC calculated with
   // http://tomeko.net/online_tools/crc8.php?lang=en
-  constexpr uint8_t crc = 0xE9;
+  constexpr uint8_t crc = 0xa7;
 
-  uint8_t buffer[29] = {cnfLine_msgid, // 0x42
-                        0x00,          0x00, 0xde, 0xad, 0xbe, 0xef, 0x00,
-                        0x00,          0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00,          0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00,          0x00, 0x00, 0x00, 0x00, 0x01, crc};
+  uint8_t buffer[30] = {cnfLine_msgid /* 0x42 */, 0, 0, 1,
+                        0xde, 0xad, 0xbe, 0xef, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00,
+                        crc};
 
   // Line not accepted
   EXPECT_CALL(*knitterMock, setNextLine);
@@ -66,14 +71,14 @@ TEST_F(SerialEncodingTest, test_cnfmsg) {
   s->onPacketReceived(buffer, sizeof(buffer));
 
   // Not last line
-  buffer[27] = 0x00;
-  buffer[28] = 0xB7;
+  buffer[3] = 0x00;
+  buffer[29] = 0xc0;
   EXPECT_CALL(*knitterMock, setNextLine).WillOnce(Return(true));
   s->onPacketReceived(buffer, sizeof(buffer));
 
   // crc wrong
   EXPECT_CALL(*knitterMock, setNextLine).Times(0);
-  buffer[28]--;
+  buffer[29]--;
   s->onPacketReceived(buffer, sizeof(buffer));
 
   // Not enough bytes in buffer

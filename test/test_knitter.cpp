@@ -130,7 +130,7 @@ protected:
     EXPECT_CALL(*beeperMock, ready);
     // operate
     uint8_t line[] = {1};
-    k->startOperation(0, 0, NUM_NEEDLES - 1, false, line);
+    k->startOperation(0, 0, 199, false, line);
   }
 
   void expected_operate(bool first) {
@@ -251,20 +251,21 @@ TEST_F(KnitterTest, test_fsm_test) {
 TEST_F(KnitterTest, test_startOperation) {
   uint8_t line[] = {1};
   // Not in ready state
-  ASSERT_EQ(k->startOperation(0, 0, NUM_NEEDLES - 1, false, line), false);
+  ASSERT_EQ(k->startOperation(0, 0, 199, false, line), false);
+  ASSERT_EQ(k->startOperation(2, 0, 113, false, line), false);
 
   get_to_ready();
   EXPECT_CALL(*beeperMock, ready);
-  ASSERT_EQ(k->startOperation(0, 0, NUM_NEEDLES - 1, false, line), true);
+  ASSERT_EQ(k->startOperation(0, 0, 199, false, line), true);
 
   // stopNeedle lower than start
   ASSERT_EQ(k->startOperation(0, 1, 0, false, line), false);
 
-  // stopNeedle equal to NUM_NEEDLES
-  ASSERT_EQ(k->startOperation(0, 0, NUM_NEEDLES, false, line), false);
+  // stopNeedle equal to m_numNeedles
+  ASSERT_EQ(k->startOperation(0, 0, 200, false, line), false);
 
   // null pointer passed as line
-  ASSERT_EQ(k->startOperation(0, 0, NUM_NEEDLES - 1, false, nullptr), false);
+  ASSERT_EQ(k->startOperation(0, 0, 199, false, nullptr), false);
 }
 
 /*!
@@ -296,7 +297,7 @@ TEST_F(KnitterTest, test_setNextLine) {
   expected_operate(true);
 
   // Outside of the active needles
-  expected_isr(40 + NUM_NEEDLES - 1 + END_OF_LINE_OFFSET_R + 1);
+  expected_isr(40 + 200 - 1 + END_OF_LINE_OFFSET_R + 1);
   EXPECT_CALL(*solenoidsMock, setSolenoid).Times(1);
   expected_operate(false);
   ASSERT_EQ(k->getState(), s_operate);
@@ -330,8 +331,8 @@ TEST_F(KnitterTest, test_operate) {
   uint8_t line[] = {1};
   // startNeedle is greater than pixelToSet
   EXPECT_CALL(*beeperMock, ready);
-  constexpr uint8_t START_NEEDLE = NUM_NEEDLES - 2;
-  constexpr uint8_t STOP_NEEDLE = NUM_NEEDLES - 1;
+  constexpr uint8_t START_NEEDLE = 198;
+  constexpr uint8_t STOP_NEEDLE = 199;
   k->startOperation(0, START_NEEDLE, STOP_NEEDLE, true, line);
 
   // First operate
@@ -374,7 +375,7 @@ TEST_F(KnitterTest, test_operate_line_request) {
 
   // Position has changed since last call to operate function
   // m_pixelToSet is set above m_stopNeedle + END_OF_LINE_OFFSET_R
-  expected_isr(NUM_NEEDLES + 8 + END_OF_LINE_OFFSET_R + 1);
+  expected_isr(200 + 8 + END_OF_LINE_OFFSET_R + 1);
 
   EXPECT_CALL(*solenoidsMock, setSolenoid);
   expected_operate(false);
@@ -394,7 +395,7 @@ TEST_F(KnitterTest, test_operate_lastline) {
 
   // Position has changed since last call to operate function
   // m_pixelToSet is above m_stopNeedle + END_OF_LINE_OFFSET_R
-  expected_isr(NUM_NEEDLES + 8 + END_OF_LINE_OFFSET_R + 1);
+  expected_isr(200 + 8 + END_OF_LINE_OFFSET_R + 1);
 
   // m_lastLineFlag is true
   k->setLastLine();
@@ -454,7 +455,7 @@ TEST_F(KnitterTest, test_operate_new_line) {
 
   // Position has changed since last call to operate function
   // m_pixelToSet is above m_stopNeedle + END_OF_LINE_OFFSET_R
-  expected_isr(NUM_NEEDLES + 8 + END_OF_LINE_OFFSET_R + 1);
+  expected_isr(200 + 8 + END_OF_LINE_OFFSET_R + 1);
 
   // Set m_lineRequested to false
   EXPECT_CALL(*beeperMock, finishedLine);
