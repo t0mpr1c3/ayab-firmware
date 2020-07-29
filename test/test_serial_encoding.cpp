@@ -1,7 +1,31 @@
-#include "gtest/gtest.h"
+/*!`
+ * \file test_serial_encoding.cpp
+ *
+ * This file is part of AYAB.
+ *
+ *    AYAB is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    AYAB is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with AYAB.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *    Original Work Copyright 2013 Christian Obersteiner, Andreas Müller
+ *    Modified Work Copyright 2020 Sturla Lange, Tom Price
+ *    http://ayab-knitting.com
+ */
 
-#include "serial_encoding.h"
-#include "serial_encoding/knitter_mock.h"
+#include <gtest/gtest.h>
+
+#include <serial_encoding.h>
+#include <machine_mock.h>
+#include <knitter_mock.h>
 
 using ::testing::_;
 using ::testing::Return;
@@ -9,6 +33,7 @@ using ::testing::Return;
 class SerialEncodingTest : public ::testing::Test {
 protected:
   void SetUp() override {
+    /*machineMock = machineMockInstance();*/
     knitterMock = knitterMockInstance();
     serialMock = serialMockInstance();
     EXPECT_CALL(*serialMock, begin);
@@ -16,10 +41,12 @@ protected:
   }
 
   void TearDown() override {
+    /*releaseMachineMock();*/
     releaseKnitterMock();
     releaseSerialMock();
   }
 
+  /*MachineMock *machineMock;*/
   KnitterMock *knitterMock;
   SerialMock *serialMock;
   SerialEncoding *s;
@@ -49,23 +76,24 @@ TEST_F(SerialEncodingTest, test_infomsg) {
 }
 
 TEST_F(SerialEncodingTest, test_cnfmsg) {
-  // CRC calculated with
-  // http://tomeko.net/online_tools/crc8.php?lang=en
-  constexpr uint8_t crc = 0xa7;
-
+  // test machine with 200 needles
+  knitterMock->getMachine().setMachineType(Kh910);
   uint8_t buffer[30] = {cnfLine_msgid /* 0x42 */, 0, 0, 1,
                         0xde, 0xad, 0xbe, 0xef, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00,
-                        crc};
+                        0xa7};  // CRC8
+  // CRC8 calculated with
+  // http://tomeko.net/online_tools/crc8.php?lang=en
 
   // Line not accepted
   EXPECT_CALL(*knitterMock, setNextLine);
   s->onPacketReceived(buffer, sizeof(buffer));
 
   // Line accepted, last line
+  /*EXPECT_CALL(*machineMock, lenLineBuffer);*/
   EXPECT_CALL(*knitterMock, setLastLine);
   EXPECT_CALL(*knitterMock, setNextLine).WillOnce(Return(true));
   s->onPacketReceived(buffer, sizeof(buffer));
@@ -84,6 +112,20 @@ TEST_F(SerialEncodingTest, test_cnfmsg) {
   // Not enough bytes in buffer
   EXPECT_CALL(*knitterMock, setNextLine).Times(0);
   s->onPacketReceived(buffer, sizeof(buffer) - 1);
+
+  // message for KH270
+  knitterMock->getMachine().setMachineType(Kh270);
+  uint8_t bufferKh270[20] = {cnfLine_msgid, 0, 0, 1,
+                             0xde, 0xad, 0xbe, 0xef, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00,
+                             0xab};  // CRC8
+
+  // Line accepted, last line
+  /*EXPECT_CALL(*machineMock, lenLineBuffer);*/
+  EXPECT_CALL(*knitterMock, setLastLine);
+  EXPECT_CALL(*knitterMock, setNextLine).WillOnce(Return(true));
+  s->onPacketReceived(bufferKh270, sizeof(bufferKh270));
 }
 
 TEST_F(SerialEncodingTest, test_debug) {

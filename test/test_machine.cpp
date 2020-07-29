@@ -1,5 +1,6 @@
-/*!
- * \file hw_test.h
+/*!`
+ * \file test_machine.cpp
+ *
  * This file is part of AYAB.
  *
  *    AYAB is free software: you can redistribute it and/or modify
@@ -15,15 +16,41 @@
  *    You should have received a copy of the GNU General Public License
  *    along with AYAB.  If not, see <http://www.gnu.org/licenses/>.
  *
- *    Original Work Copyright 2013 Christian Obersteiner, Andreas MÃ¼ller
- *    Modified Work Copyright 2020 Sturla Lange
+ *    Original Work Copyright 2013 Christian Obersteiner, Andreas Müller
+ *    Modified Work Copyright 2020 Sturla Lange, Tom Price
  *    http://ayab-knitting.com
  */
 
-#ifndef HW_TEST_H
-#define HW_TEST_H
+#include <gtest/gtest.h>
 
-void hw_test_setup();
-void hw_test_loop();
+#include <machine.h>
 
-#endif  // HW_TEST_H
+using ::testing::_;
+using ::testing::Return;
+
+class MachineTest : public ::testing::Test {
+protected:
+  void SetUp() override {
+    m = new Machine();
+  }
+
+  void TearDown() override {
+  }
+
+  Machine *m;
+};
+
+/*!
+ * \test
+ */
+TEST_F(MachineTest, test_constructor) {
+  ASSERT_EQ(m->getMachineType(), NO_MACHINE);
+}
+
+/*!
+ * \test
+ */
+TEST_F(MachineTest, test_setMachineType) {
+  m->setMachineType(Kh270);
+  ASSERT_EQ(m->getMachineType(), Kh270);
+}

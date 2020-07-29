@@ -1,4 +1,3 @@
-#pragma once
 /*!
  * \file board.h
  *
@@ -21,6 +20,8 @@
  *    Modified Work Copyright 2020 Sturla Lange
  *    http://ayab-knitting.com
  */
+#ifndef BOARD_H
+#define BOARD_H
 
 #include <Arduino.h>
 
@@ -60,3 +61,5 @@ constexpr uint16_t START_OPERATION_DELAY = 2000U;
 #else
 #error "untested board - please check your I2C ports"
 #endif
+
+#endif  // BOARD_H
