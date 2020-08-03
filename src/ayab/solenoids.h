@@ -1,4 +1,3 @@
-#pragma once
 /*!
  * \file solenoids.h
  *
@@ -21,6 +20,9 @@
  *    Modified Work Copyright 2020 Sturla Lange
  *    http://ayab-knitting.com
  */
+
+#ifndef SOLENOIDS_H_
+#define SOLENOIDS_H_
 
 #include <Arduino.h>
 
@@ -65,3 +67,5 @@ private:
   SoftI2CMaster SoftI2C;
 #endif
 };
+
+#endif  // SOLENOIDS_H_

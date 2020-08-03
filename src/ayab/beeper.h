@@ -1,4 +1,3 @@
-#pragma once
 /*!
  * \file beeper.h
  *
@@ -21,6 +20,9 @@
  *    Modified Work Copyright 2020 Sturla Lange
  *    http://ayab-knitting.com
  */
+#ifndef BEEPER_H_
+#define BEEPER_H_
+
 #include <Arduino.h>
 
 constexpr uint8_t BEEP_DELAY = 50U; // ms
@@ -47,3 +49,5 @@ public:
 private:
   static void beep(uint8_t length);
 };
+
+#endif  // BEEPER_H_

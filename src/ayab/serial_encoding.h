@@ -20,17 +20,17 @@
  *    Modified Work Copyright 2020 Sturla Lange
  *    http://ayab-knitting.com
  */
-#pragma once
+#ifndef SERIAL_ENCODING_H_
+#define SERIAL_ENCODING_H_
 
 #include <Arduino.h>
-
 #include <PacketSerial.h>
 
-constexpr uint8_t FW_VERSION_MAJ = 0U;
-constexpr uint8_t FW_VERSION_MIN = 95U;
+constexpr uint8_t FW_VERSION_MAJ = 1U;
+constexpr uint8_t FW_VERSION_MIN = 0U;
 constexpr uint8_t FW_VERSION_PATCH = 0U;
 
-constexpr uint8_t API_VERSION = 5U; // for message description, see below
+constexpr uint8_t API_VERSION = 6U;
 
 constexpr uint32_t SERIAL_BAUDRATE = 115200U;
 
@@ -67,3 +67,5 @@ private:
   void h_reqInfo();
   void h_reqTest();
 };
+
+#endif  // SERIAL_ENCODING_H_

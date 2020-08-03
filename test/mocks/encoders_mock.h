@@ -1,5 +1,6 @@
-/*!
- * \file hw_test.h
+/*!`
+ * \file encoders_mock.h
+ *
  * This file is part of AYAB.
  *
  *    AYAB is free software: you can redistribute it and/or modify
@@ -15,15 +16,29 @@
  *    You should have received a copy of the GNU General Public License
  *    along with AYAB.  If not, see <http://www.gnu.org/licenses/>.
  *
- *    Original Work Copyright 2013 Christian Obersteiner, Andreas MÃ¼ller
- *    Modified Work Copyright 2020 Sturla Lange
+ *    Original Work Copyright 2013 Christian Obersteiner, Andreas Müller
+ *    Modified Work Copyright 2020 Sturla Lange, Tom Price
  *    http://ayab-knitting.com
  */
 
-#ifndef HW_TEST_H
-#define HW_TEST_H
+#ifndef ENCODERS_MOCK_H_
+#define ENCODERS_MOCK_H_
 
-void hw_test_setup();
-void hw_test_loop();
+#include <encoders.h>
+#include <gmock/gmock.h>
 
-#endif  // HW_TEST_H
+class EncodersMock {
+public:
+  MOCK_METHOD0(encA_interrupt, void());
+  MOCK_METHOD0(getPosition, uint8_t());
+  MOCK_METHOD0(getBeltshift, Beltshift_t());
+  MOCK_METHOD0(getDirection, Direction_t());
+  MOCK_METHOD0(getHallActive, Direction_t());
+  MOCK_METHOD0(getCarriage, Carriage_t());
+  MOCK_METHOD1(getHallValue, uint16_t(Direction_t));
+};
+
+EncodersMock *encodersMockInstance();
+void releaseEncodersMock();
+
+#endif  // ENCODERS_MOCK_H_

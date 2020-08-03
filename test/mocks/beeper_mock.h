@@ -1,5 +1,6 @@
-/*!
- * \file hw_test.h
+/*!`
+ * \file beeper_mock.h
+ *
  * This file is part of AYAB.
  *
  *    AYAB is free software: you can redistribute it and/or modify
@@ -15,15 +16,25 @@
  *    You should have received a copy of the GNU General Public License
  *    along with AYAB.  If not, see <http://www.gnu.org/licenses/>.
  *
- *    Original Work Copyright 2013 Christian Obersteiner, Andreas MÃ¼ller
- *    Modified Work Copyright 2020 Sturla Lange
+ *    Original Work Copyright 2013 Christian Obersteiner, Andreas Müller
+ *    Modified Work Copyright 2020 Sturla Lange, Tom Price
  *    http://ayab-knitting.com
  */
 
-#ifndef HW_TEST_H
-#define HW_TEST_H
+#ifndef BEEPER_MOCK_H_
+#define BEEPER_MOCK_H_
 
-void hw_test_setup();
-void hw_test_loop();
+#include <beeper.h>
+#include <gmock/gmock.h>
 
-#endif  // HW_TEST_H
+class BeeperMock {
+public:
+  MOCK_METHOD0(ready, void());
+  MOCK_METHOD0(finishedLine, void());
+  MOCK_METHOD0(endWork, void());
+};
+
+BeeperMock *beeperMockInstance();
+void releaseBeeperMock();
+
+#endif  // BEEPER_MOCK_H_
